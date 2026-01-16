@@ -1,0 +1,50 @@
+{
+    "name": "svg-graphic-editor",
+    "version": "1.0.0",
+    "description": "基于 Vue 3 + Vite 开发的 SVG 图形编辑器，提供完整的 SVG 编辑功能",
+    "keywords": [
+        "svg",
+        "editor",
+        "vue3",
+        "vite",
+        "graphic",
+        "drawing"
+    ],
+    "private": true,
+    "type": "module",
+    "author": "kkdlk",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kkdlk/svg-graphic-editor"
+    },
+    "homepage": "https://github.com/kkdlk/svg-graphic-editor#readme",
+    "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+    },
+    "scripts": {
+        "dev": "vite",
+        "build": "npm run lint && vite build",
+        "build-only": "vite build",
+        "lint": "eslint . --fix --cache",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@svgdotjs/svg.draggable.js": "^3.0.6",
+        "@svgdotjs/svg.draw.js": "^3.0.2",
+        "@svgdotjs/svg.js": "^3.2.5",
+        "@svgdotjs/svg.panzoom.js": "^2.1.2",
+        "@svgdotjs/svg.resize.js": "^2.0.5",
+        "@svgdotjs/svg.select.js": "^4.0.3",
+        "element-plus": "^2.13.1",
+        "vue": "^3.5.26"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^6.0.3",
+        "eslint": "^9.39.2",
+        "eslint-plugin-vue": "~10.6.2",
+        "sass-embedded": "^1.97.1",
+        "vite": "^7.3.0",
+        "vite-plugin-vue-devtools": "^8.0.5"
+    }
+}
