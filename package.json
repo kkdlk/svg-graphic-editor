@@ -36,6 +36,7 @@
         "@svgdotjs/svg.panzoom.js": "^2.1.2",
         "@svgdotjs/svg.resize.js": "^2.0.5",
         "@svgdotjs/svg.select.js": "^4.0.3",
+        "dxf-writer": "^1.18.4",
         "element-plus": "^2.13.1",
         "vue": "^3.5.26"
     },

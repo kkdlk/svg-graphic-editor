@@ -4,7 +4,9 @@
  */
 export const SVG_METADATA = {
     /** 标记元素为不可选中 */
-    noSelect: "no-select"
+    noSelect: "no-select",
+    /** 标记元素是否为闭合路径 */
+    isPathClosed: "is-path-closed"
 }
 // 内置固定ID
 export const SVG_META_BUILT_ID = {

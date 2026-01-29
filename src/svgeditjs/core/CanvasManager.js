@@ -42,6 +42,8 @@ export default class CanvasManager {
         this._resizeObserver = null
         // 创建画布容器背景和网格
         this._createCanvasContainerBackgroundAndGrid()
+        // 图案填充
+        this._fillPatternMap = new Map()
     }
     /**
      * 初始化 SVG 容器
@@ -169,21 +171,51 @@ export default class CanvasManager {
         const gridGroup = group || this._svgCanvas.group().addClass("background-grid-layer")
         // 绘制垂直网格线
         for (let x = 0; x <= width; x += gridSize) {
-            gridGroup.line(x, 0, x, height).stroke({
-                width: 0.5,
-                color: gridLineColor,
-                opacity: 0.5
-            })
+            gridGroup
+                .line(x, 0, x, height)
+                .stroke({
+                    width: 0.5,
+                    color: gridLineColor,
+                    opacity: 0.5
+                })
+                .attr(SVG_METADATA.noSelect, true)
         }
         // 绘制水平网格线
         for (let y = 0; y <= height; y += gridSize) {
-            gridGroup.line(0, y, width, y).stroke({
-                width: 0.5,
-                color: gridLineColor,
-                opacity: 0.5
-            })
+            gridGroup
+                .line(0, y, width, y)
+                .stroke({
+                    width: 0.5,
+                    color: gridLineColor,
+                    opacity: 0.5
+                })
+                .attr(SVG_METADATA.noSelect, true)
         }
         return gridGroup
+    }
+
+    /**
+     * 注册填充
+     * @param {string} name - 填充名称
+     * @param {string} svgString - 填充 SVG 字符串
+     */
+    registerFillPattern(name, svgString) {
+        const defs = this._svgCanvas.defs()
+        this._elementManager.registerElement(defs)
+        const width = 64
+        const height = 64
+        const pattern = defs
+            .pattern(width, height, (svgEl) => {
+                svgEl.svg(svgString).viewbox(0, 0, width, height).size("100%", "100%").move(0, 0)
+            })
+            .attr({
+                patternUnits: "userSpaceOnUse"
+            })
+        // 添加到容器内
+        const eleId = this._elementManager.registerElement(pattern)
+        // 注册到ID和内容的映射
+        this._fillPatternMap.set(eleId, { id: eleId, label: name, value: `url(#${eleId})`, pattern: pattern })
+        return eleId
     }
     /**
      * 是否是不可选择元素
@@ -203,6 +235,7 @@ export default class CanvasManager {
      */
     destroy() {
         // 断开容器尺寸变化监听器
+        this._fillPatternMap.clear()
         this._resizeObserver?.disconnect()
         this._resizeObserver = null
         this._elementManager.destroy()
@@ -223,5 +256,11 @@ export default class CanvasManager {
      */
     get svgCanvas() {
         return this._svgCanvas
+    }
+    get fillPatternMap() {
+        return this._fillPatternMap
+    }
+    clearFillPattern() {
+        this._fillPatternMap.clear()
     }
 }

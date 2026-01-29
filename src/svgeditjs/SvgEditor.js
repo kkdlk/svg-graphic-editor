@@ -102,6 +102,14 @@ export default class SVGEditor {
     exportSvgString() {
         return this._svgCoreContext.exportSvgString()
     }
+
+    /**
+     * 导出 DXF 字符串
+     * @returns {string|null} DXF 字符串，失败返回 null
+     */
+    exportDxfString() {
+        return this._svgCoreContext.exportDxfString()
+    }
     /**
      * 清除所有元素
      */

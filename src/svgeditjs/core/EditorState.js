@@ -134,18 +134,26 @@ class EditorState {
 
         const keyList = Array.isArray(keys) ? keys : [keys]
 
+        // 为每个键添加回调，并在回调中标记原始的 keyList
         keyList.forEach((key) => {
             if (!this._stateListeners.has(key)) {
                 this._stateListeners.set(key, new Set())
             }
-            this._stateListeners.get(key).add(callback)
+            // 存储回调和原始的 keyList 信息
+            this._stateListeners.get(key).add({ callback, keyList })
         })
 
         return () => {
             keyList.forEach((key) => {
                 const listeners = this._stateListeners.get(key)
                 if (listeners) {
-                    listeners.delete(callback)
+                    // 找到并删除对应的监听器对象
+                    for (const listener of listeners) {
+                        if (listener.callback === callback) {
+                            listeners.delete(listener)
+                            break
+                        }
+                    }
                 }
             })
         }
@@ -185,13 +193,22 @@ class EditorState {
             uniquePaths.forEach((path) => {
                 const listeners = this._stateListeners.get(path)
                 if (listeners) {
-                    listeners.forEach((callback) => {
-                        if (!notifiedListeners.has(callback)) {
+                    listeners.forEach((listener) => {
+                        // 检查监听器是否已经被通知过
+                        const callbackToCheck = typeof listener === "function" ? listener : listener.callback
+                        if (!notifiedListeners.has(callbackToCheck)) {
                             try {
-                                const currentValue = this.getState(path)
-                                const oldValue = this._getOldValueForPath(path, oldValues, key)
-                                callback(currentValue, oldValue, path)
-                                notifiedListeners.add(callback)
+                                if (typeof listener === "function") {
+                                    // 传统的单个监听器
+                                    const currentValue = this.getState(path)
+                                    const oldValue = this._getOldValueForPath(path, oldValues, key)
+                                    listener(currentValue, oldValue, path)
+                                } else {
+                                    // 批量键监听器
+                                    const values = listener.keyList.map((k) => this.getState(k))
+                                    listener.callback(...values)
+                                }
+                                notifiedListeners.add(callbackToCheck)
                             } catch (error) {
                                 console.error(`状态监听器错误(${path}):`, error)
                             }

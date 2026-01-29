@@ -20,7 +20,7 @@
                 <el-input-number v-model="opacity" :precision="1" :min="0.1" :max="1.0" :step="0.1"
                     style="width: 100%" />
             </el-form-item>
-            <template v-if="['rect', 'circle', 'ellipse', 'polygon'].includes(selectElement?.type)">
+            <template v-if="['rect', 'circle', 'ellipse', 'polygon'].includes(selectElement?.type) || isPathClosed">
                 <el-form-item label="填充颜色" label-position="left">
                     <el-color-picker show-alpha v-model="fill" size="large" @clear="() => (fill = 'transparent')" />
                 </el-form-item>
@@ -81,6 +81,9 @@
                     </el-select>
                 </el-form-item>
             </template>
+            <el-form-item>
+                <el-button style="width: 100%" @click="deleteElement" type="danger">删除</el-button>
+            </el-form-item>
         </div>
     </el-card>
 </template>
@@ -88,7 +91,9 @@
 <script setup>
 import SvgEditor from "../../../SvgEditor"
 import EventConstant from "@/svgeditjs/constant/EventConstant.js"
+import { SVG_METADATA } from "@/svgeditjs/constant/BasicConfig.js"
 import { computed, watch, ref, onUnmounted } from "vue"
+import { ElMessageBox } from "element-plus"
 
 const props = defineProps({
     // 编辑器实例
@@ -151,7 +156,11 @@ const positionY = createMetadataComputed("y", 0)
 const rotate = createMetadataComputed("rotate", 0)
 // 基础样式属性
 const opacity = createStyleComputed("opacity", 1)
-
+// 是否是闭合曲线
+const isPathClosed = computed(() => {
+    if (!selectElement.value) return false
+    return selectElement.value?.metadata?.[SVG_METADATA.isPathClosed] ?? false
+})
 // 填充相关属性
 const fill = computed({
     get: () => {
@@ -227,7 +236,15 @@ let eventListener = null
 if (props.svgEditor) {
     eventListener = props.svgEditor.on([EventConstant.ELEMENT_FORMAT_DATA, EventConstant.ELEMENT_UPDATE_DATA], handleElementDataChange)
 }
-
+const deleteElement = () => {
+    // 删除
+    ElMessageBox.confirm(`是否删除已选择的${props.selectIdList.length}条数据`, "删除选中图层").then(() => {
+        props.selectIdList.forEach((id) => {
+            props.svgEditor.svgCoreContext.elementManager.removeElement(id)
+            props.svgEditor.svgCoreContext.selectionHandler.clearSelectElement()
+        })
+    })
+}
 // 清理事件监听
 onUnmounted(() => {
     if (props.svgEditor && eventListener) {

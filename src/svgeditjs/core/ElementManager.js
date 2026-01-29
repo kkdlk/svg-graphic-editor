@@ -1,5 +1,6 @@
 import { Text } from "@svgdotjs/svg.js"
 import EventConstant from "../constant/EventConstant.js"
+import { SVG_METADATA } from "../constant/BasicConfig.js"
 /**
  * SVG 元素管理器
  * 用于管理 SVG 元素，提供元素的注册、查找、样式管理和生命周期管理
@@ -25,8 +26,8 @@ export default class SVGElementManager {
             console.warn("SVG 元素无效: 元素或元素节点不存在")
             return null
         }
-        // 生成唯一ID：使用传入的ID或生成基于时间戳的随机ID
-        const elementId = metadata.id || this._generateUniqueId(svgElement.node.nodeName.toLowerCase())
+        // 生成唯一ID：优先使用metadata.id，其次尝试获取元素上的data-svg-id属性，最后生成随机ID
+        const elementId = metadata.id || svgElement.attr("data-svg-id") || this._generateUniqueId(svgElement.node.nodeName.toLowerCase())
         // 设置元素属性
         svgElement.attr({
             ...metadata,
@@ -44,6 +45,8 @@ export default class SVGElementManager {
         }
         // 存储到Map
         this._elements.set(elementId, elementData)
+        // 触发元素注册事件
+        this._eventBus.emit(EventConstant.ELEMENT_REGISTER, elementId)
         // console.log(`元素注册成功: ID=${elementId}, 类型=${elementData.type}`)
         return elementId
     }
@@ -184,7 +187,10 @@ export default class SVGElementManager {
             }
             // 从管理器中移除
             this._elements.delete(elementId)
+            // 触发元素删除事件
+            this._eventBus.emit(EventConstant.ELEMENT_REMOVE, elementId)
             // console.log(`元素删除成功: ID=${elementId}, 从DOM移除=${removeFromDOM}`)
+            this._eventBus.emit(EventConstant.SELECT_REMOVE, elementId)
             return elementData
         } catch (error) {
             console.error(`删除失败: ID=${elementId}`, error)
@@ -230,7 +236,7 @@ export default class SVGElementManager {
     }
 
     /**
-     * TODO: 唯一ID 生成唯一ID
+     * 唯一ID 生成唯一ID
      * @param {string} elementType - 元素类型
      * @returns {string} 唯一ID
      * @private
@@ -302,7 +308,9 @@ export default class SVGElementManager {
             y: svgElement.y(),
             width: svgElement.width(),
             height: svgElement.height(),
-            rotate: svgElement.transform().rotate || 0
+            rotate: svgElement.transform().rotate || 0,
+            [SVG_METADATA.noSelect]: svgElement.attr(SVG_METADATA.noSelect) ?? false,
+            [SVG_METADATA.isPathClosed]: svgElement.attr(SVG_METADATA.isPathClosed) ?? svgElement.isPathClosed()
         }
         // 合并元数据
         return {

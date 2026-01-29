@@ -44,5 +44,40 @@ export default {
             this.off("dragmove.namespace")
         }
         return this
+    },
+    /**
+     * 判断路径是否闭合
+     * @param {SVGElement} pathElement - 路径元素
+     * @returns {boolean}
+     */
+    isPathClosed() {
+        if (this.node.nodeName.toLowerCase() !== "path") return false
+        const pathArray = this.array()
+        let startPoint = null
+        let endPoint = null
+        for (let i = 0; i < pathArray.length; i++) {
+            const command = pathArray[i]
+            if (Array.isArray(command) && (command[0] === "Z" || command[0] === "z")) {
+                return true
+            }
+            if (command === "Z") {
+                return true
+            }
+            if (Array.isArray(command)) {
+                const cmd = command[0]
+                if (cmd === "M" || cmd === "m") {
+                    if (startPoint === null) {
+                        startPoint = { x: command[1], y: command[2] }
+                    }
+                }
+                if (command.length >= 3) {
+                    endPoint = { x: command[command.length - 2], y: command[command.length - 1] }
+                }
+            }
+        }
+        if (startPoint && endPoint) {
+            return Math.abs(startPoint.x - endPoint.x) < 0.01 && Math.abs(startPoint.y - endPoint.y) < 0.01
+        }
+        return false
     }
 }

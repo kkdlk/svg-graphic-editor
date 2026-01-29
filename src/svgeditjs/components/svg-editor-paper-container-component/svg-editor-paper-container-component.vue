@@ -5,8 +5,7 @@
             <div class="svg-editor-svg-container" :id="containerID"></div>
         </div>
         <div class="svg-editor-right-container" v-if="!props.readonly">
-            <svg-style-editor-component v-if="editorStatus" :svgEditor="svgEditor"
-                :selectIdList="svgContentProvider.selectElementIds" />
+            <svg-style-editor-component v-if="editorStatus" :svgEditor="svgEditor" :selectIdList="svgContentProvider.selectElementIds" />
         </div>
     </div>
 </template>

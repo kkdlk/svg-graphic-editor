@@ -6,8 +6,7 @@
         <!--svg内容编辑器-->
         <div class="svg-editor-container-content">
             <svg-editor-toolbar-component :readonly="props.readonly" v-model="svgContentProvider.currentSvgTool" />
-            <svg-editor-paper-container-component :readonly="props.readonly" :initSvgLoadEvent="props.initSvgLoadEvent"
-                ref="paperContainerRef" />
+            <svg-editor-paper-container-component :readonly="props.readonly" :initSvgLoadEvent="props.initSvgLoadEvent" ref="paperContainerRef" />
         </div>
     </div>
 </template>

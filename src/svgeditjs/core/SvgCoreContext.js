@@ -5,6 +5,8 @@ import SelectionHandler from "./SelectionHandler.js"
 import DrawingManager from "./DrawingManager.js"
 import EventConstant from "../constant/EventConstant.js"
 import { SVG } from "@svgdotjs/svg.js"
+import SvgToDxfConverter from "../utils/SvgToDxfConverter.js"
+import HistoryManager from "./HistoryManager.js"
 
 /**
  * @class SVGCoreContext
@@ -34,10 +36,9 @@ export default class SVGCoreContext {
         this._subscribeCurrentTool()
         // 10、重置默认值触发事件
         this._editorState.resetState(state)
-        // 11、图案填充
-        this._fillPatternMap = new Map()
-        // 创建模板数据
         this.createTemplateSvg()
+        // 11、构建历史记录管理器 (放在最后以捕获初始状态)
+        this._historyManager = new HistoryManager(this)
     }
 
     /**
@@ -88,36 +89,28 @@ export default class SVGCoreContext {
     setTool(toolType) {
         this._editorState.setState("currentTool", toolType)
     }
-
+    /**
+     * 清空画布
+     */
+    clear() {
+        this._elementManager.clearAllElements(true)
+    }
     /**
      * 注册填充
      * @param {string} name - 填充名称
      * @param {string} svgString - 填充 SVG 字符串
+     * @returns {void|*}
      */
     registerFillPattern(name, svgString) {
-        const width = 64
-        const height = 64
-        const pattern = this._svgCanvas
-            .pattern(width, height, (svgEl) => {
-                svgEl.svg(svgString).viewbox(0, 0, width, height).size("100%", "100%").move(0, 0)
-            })
-            .attr({
-                patternUnits: "userSpaceOnUse"
-            })
-        // 添加到容器内
-        const eleId = this._elementManager.registerElement(pattern)
-        // 注册到ID和内容的映射
-        this._fillPatternMap.set(eleId, { id: eleId, label: name, value: `url(#${eleId})`, pattern: pattern })
-        return eleId
+        return this._canvasManager.registerFillPattern(name, svgString)
     }
-
     /**
      * 获取填充
      * @param id
      * @returns {any}
      */
     getPatternById(id) {
-        return this._fillPatternMap.get(id)
+        return this._canvasManager.fillPatternMap.get(id)
     }
     /**
      * 获取所有填充名称
@@ -125,7 +118,18 @@ export default class SVGCoreContext {
      */
     getPatternNames() {
         // map 转数组
-        return Array.from(this._fillPatternMap.values())
+        return Array.from(this._canvasManager.fillPatternMap.values())
+    }
+    /**
+     * 关闭所有工具事件
+     */
+    _closeDisibleToolEvent() {
+        // 禁用平移缩放
+        this.setPanZoomStatus(false)
+        // 取消选择事件绑定
+        this._selectionHandler.unBindSelectEvent()
+        // 取消激活当前工具
+        this._drawingManager.setActiveTool(false)
     }
 
     /**
@@ -133,12 +137,8 @@ export default class SVGCoreContext {
      */
     _subscribeCurrentTool() {
         this._editorState.subscribe("currentTool", (toolType) => {
-            // 禁用平移缩放
-            this.setPanZoomStatus(false)
-            // 取消选择事件绑定
-            this._selectionHandler.unBindSelectEvent()
-            // 取消激活当前工具
-            this._drawingManager.setActiveTool(false)
+            // 关闭所有工具事件
+            this._closeDisibleToolEvent()
             // 根据工具类型进行初始化
             switch (toolType) {
                 case "moveZoom":
@@ -193,7 +193,10 @@ export default class SVGCoreContext {
     exportSvgString() {
         return this._svgCanvas.svg()
     }
-
+    // 导出 DXF 字符串
+    exportDxfString() {
+        return SvgToDxfConverter.convert(this._svgCanvas)
+    }
     get editorState() {
         return this._editorState
     }
@@ -230,6 +233,9 @@ export default class SVGCoreContext {
         return this._drawingManager
     }
 
+    get historyManager() {
+        return this._historyManager
+    }
     destroy() {
         // 关闭平移缩放
         this.setPanZoomStatus(false)
@@ -245,5 +251,7 @@ export default class SVGCoreContext {
         this._selectionHandler.destroy()
         // 销毁画板管理器
         this._canvasManager.destroy()
+        // 销毁历史记录管理器
+        this._historyManager.destroy()
     }
 }

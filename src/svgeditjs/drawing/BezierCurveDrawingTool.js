@@ -1,4 +1,4 @@
-import { SvgDrawDefaultOptions } from "../constant/BasicConfig"
+import { SvgDrawDefaultOptions, SVG_METADATA } from "../constant/BasicConfig"
 import EventConstant from "../constant/EventConstant"
 import { convertMouseToSvgCoordinates } from "../utils/SnapUtils"
 
@@ -132,24 +132,39 @@ export default class BezierCurveDrawingTool {
         // 清理引用
         this._drawingElement = null
     }
-
     /**
      * 处理画布双击事件
      */
     _onCanvasDblClick(event) {
         // 结束绘制
         if (this._drawingStatus === "drawing") {
+            // 完成绘制，注册元素，触发绘制完成事件
+            // 转换鼠标坐标到SVG坐标
+            const mousePos = convertMouseToSvgCoordinates(event, this._svgCanvas.node)
+            // 检查是否点击在现有锚点或控制柄上
+            const clickedPointIndex = this._getClickedPointIndex(mousePos)
             // 当前状态设置为完成
             this._drawingStatus = "done"
             // 获取当前绘图元素的类型
             const currentToolType = this._currentToolType
+            let isPathClosed = false
             // 清理最后一个点的控制点
             if (this._bezierPoints.length > 0) {
                 this._bezierPoints[this._bezierPoints.length - 1].controlOut = null
-                this._updateDrawing()
+                // 检查是否需要闭合路径（如果双击了起点）
+                // 检查是否双击起点（第一个锚点）
+                if (this._bezierPoints.length > 2 && clickedPointIndex === 0) {
+                    const pathArray = this._createPathArray()
+                    pathArray.push(["Z"])
+                    this._drawingElement.plot(pathArray)
+                    isPathClosed = true
+                } else {
+                    this._updateDrawing()
+                    isPathClosed = false
+                }
             }
             // 完成绘制流程
-            const elId = this._elementManager.registerElement(this._drawingElement)
+            const elId = this._elementManager.registerElement(this._drawingElement, { [SVG_METADATA.isPathClosed]: isPathClosed })
             this._drawAddList.push(elId)
             // 触发绘制完成事件，通知外部绘制已完成
             this._svgCoreContext.eventBus.emit(EventConstant.DRAW_DONE, this._drawingElement, event)
@@ -170,7 +185,6 @@ export default class BezierCurveDrawingTool {
             }
         }
     }
-
     /**
      * 重置所有绘图状态
      */

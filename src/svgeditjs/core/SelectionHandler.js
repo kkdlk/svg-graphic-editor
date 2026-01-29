@@ -61,6 +61,12 @@ export default class SelectionHandler {
                     this._svgElementManage.elementFormatData(this._selectElementList.map((item) => item.id()))
                     this._eventBus.emit(EventConstant.SELECT_DRAG_MOVE, this._selectElementList, event)
                 })
+                .on("dragend", (event) => {
+                    this._eventBus.emit(EventConstant.SELECT_DRAG_END, this._selectElementList, event)
+                })
+                .on("beforeresize", (event) => {
+                    this._eventBus.emit(EventConstant.SELECT_RESIZE_END, this._selectElementList, event)
+                })
                 .on("resize", (event) => {
                     this._svgElementManage.elementFormatData(this._selectElementList.map((item) => item.id()))
                     this._eventBus.emit(EventConstant.SELECT_RESIZE, this._selectElementList, event)
@@ -280,6 +286,11 @@ export default class SelectionHandler {
         })
         return selectedElements
     }
+
+    get selectElementList() {
+        return this._selectElementList
+    }
+
     destroy() {
         // 选择元素列表
         this._selectElementList = []
