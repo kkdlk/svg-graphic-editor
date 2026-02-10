@@ -8,7 +8,7 @@
 						<el-button :type="modelValue === child.value ? 'primary' : 'default'"
 							@click="handleToolSelect(child.value)" :title="child.title" size="large">
 							<template #icon>
-								<svg viewBox="0 0 1024 1024" width="24" height="24" v-html="child.icon" />
+								<svg viewBox="0 0 1024 1024" width="24" height="24" v-html="child.icon"></svg>
 							</template>
 						</el-button>
 					</el-tooltip>
