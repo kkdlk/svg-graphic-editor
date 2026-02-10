@@ -13,6 +13,7 @@ export default class HistoryManager {
         this._eventBus = svgCoreContext.eventBus
         this._editorState = svgCoreContext.editorState
         this._elementManager = svgCoreContext.elementManager
+        this._selectionHandler = svgCoreContext.selectionHandler
         // 撤销栈
         this._undoStack = []
         // 重做栈
@@ -45,41 +46,55 @@ export default class HistoryManager {
             const ids = Array.isArray(elementIds) ? elementIds : [elementIds]
             this._handleBatchUpdate(ids)
         })
-
         // 样式更新 (单个或数组)
         this._eventBus.on(EventConstant.ELEMENT_UPDATE_DATA, (elementIds) => {
             if (this._isUndoRedo) return
             const ids = Array.isArray(elementIds) ? elementIds : [elementIds]
             this._handleBatchUpdate(ids)
         })
-
         // 新增
         this._eventBus.on(EventConstant.ELEMENT_REGISTER, (elementId) => {
             if (this._isUndoRedo) return
             // 新增元素时，需要立即记录初始快照
             this._updateSnapshot(elementId)
-            // 新增操作单独记录，不走批量更新的防抖，或者作为一次单独的 action
-            // 这里为了简单，如果用户连续添加，可以考虑是否合并，但通常添加是离散操作。
-            // 暂时不放入 batchUpdate，避免和后续的 move 混淆，或者也可以放入。
-            // 现在的逻辑是：Register 只是记录 Snapshot，不记录 UndoStack？
-            // 原有逻辑：this._handleBatchUpdate([elementId])
-            // 通常 Register 本身应该是一个 History Item (Add Element)，但这里之前的代码似乎是把 Register 当作一次 Update？
-            // 如果我们把 Register 仅仅当做 Snapshot 初始化。
-            // 真正的 "Add" 动作历史记录通常在 UI 交互层触发，或者这里我们需要区分 Type。
-            // 鉴于之前的代码逻辑：
-            // this._handleBatchUpdate([elementId])
-            // 这意味着 "Initial State" -> "Initial State" ? 这不会产生 diff。
-            // 除非 _snapshotMap 在 Register 之前是空的。
-            // 让我们保持原有的 snapshot 逻辑，但优化 update。
-            this._updateSnapshot(elementId)
+            // 记录新增历史
+            const data = this._snapshotMap.get(elementId)
+            if (data) {
+                debugger
+                this._undoStack.push({
+                    type: "add",
+                    data: data
+                })
+                // 限制栈大小
+                if (this._undoStack.length > this._maxHistory) {
+                    this._undoStack.shift()
+                }
+                // 清空重做栈
+                this._redoStack = []
+            }
         })
 
         // 删除
         this._eventBus.on(EventConstant.ELEMENT_REMOVE, (elementId) => {
             if (this._isUndoRedo) return
-            // 删除操作目前不支持撤销 (基于原有代码分析)，但需要清理 snapshot
-            this._snapshotMap.delete(elementId)
-            this._pendingElementIds.delete(elementId)
+            // 获取删除前的快照
+            const data = this._snapshotMap.get(elementId)
+            if (data) {
+                this._undoStack.push({
+                    type: "remove",
+                    data: data
+                })
+                // 限制栈大小
+                if (this._undoStack.length > this._maxHistory) {
+                    this._undoStack.shift()
+                }
+                // 清空重做栈
+                this._redoStack = []
+
+                // 清理 map
+                this._snapshotMap.delete(elementId)
+                this._pendingElementIds.delete(elementId)
+            }
         })
 
         // 画布变化
@@ -150,8 +165,11 @@ export default class HistoryManager {
         const elementData = this._elementManager.getElementData(id)
         if (!elementData) return null
         // 深拷贝，防止引用被修改
+        const element = elementData.element.clone(true)
+        element.off()
         return {
-            ...elementData,
+            id: id,
+            element,
             metadata: { ...elementData.metadata },
             style: { ...elementData.style }
         }
@@ -235,13 +253,10 @@ export default class HistoryManager {
         this._isUndoRedo = true
 
         const batchAction = this._undoStack.pop()
-        console.log("[History] Undo:", batchAction)
-
         try {
+            this._selectionHandler.clearSelectElement()
             if (batchAction.type === "batch_update") {
                 // 记录对应的 Redo 操作
-                // Undo 是即时的，不需要防抖
-
                 // 1. 恢复状态
                 batchAction.changes.forEach((change) => {
                     this._elementManager.updateElementData(change.id, change.prev)
@@ -249,8 +264,25 @@ export default class HistoryManager {
                     // 注意：updateElementData 可能会触发事件，但我们有 _isUndoRedo 锁住，不会触发 _handleBatchUpdate
                     this._updateSnapshot(change.id)
                 })
-
                 // 2. 推入 Redo 栈
+                this._redoStack.push(batchAction)
+            } else if (batchAction.type === "add") {
+                debugger
+                // 撤销新增 -> 删除元素
+                const { id } = batchAction.data
+                // 此时元素应该在画布上
+                this._elementManager.removeElement(id, true)
+                this._snapshotMap.delete(id)
+                this._redoStack.push(batchAction)
+            } else if (batchAction.type === "remove") {
+                // 撤销删除 -> 恢复元素
+                const { element } = batchAction.data
+                // 重新添加到画布
+                this._svgCoreContext.svgCanvas.add(element)
+                // 重新注册
+                this._elementManager.registerElement(element)
+                // 恢复快照
+                this._updateSnapshot(batchAction.data.id)
                 this._redoStack.push(batchAction)
             }
         } catch (e) {
@@ -268,17 +300,28 @@ export default class HistoryManager {
         this._isUndoRedo = true
 
         const batchAction = this._redoStack.pop()
-        console.log("[History] Redo:", batchAction)
-
         try {
+            this._selectionHandler.clearSelectElement()
             if (batchAction.type === "batch_update") {
                 // 1. 恢复状态 (to next)
                 batchAction.changes.forEach((change) => {
                     this._elementManager.updateElementData(change.id, change.next)
                     this._updateSnapshot(change.id)
                 })
-
                 // 2. 推入 Undo 栈
+                this._undoStack.push(batchAction)
+            } else if (batchAction.type === "add") {
+                // 重做新增 -> 恢复元素
+                const { element, metadata, style } = batchAction.data
+                this._svgCoreContext.svgCanvas.add(element)
+                this._elementManager.registerElement(element, metadata, style)
+                this._updateSnapshot(batchAction.data.id)
+                this._undoStack.push(batchAction)
+            } else if (batchAction.type === "remove") {
+                // 重做删除 -> 删除元素
+                const { id } = batchAction.data
+                this._elementManager.removeElement(id, true)
+                this._snapshotMap.delete(id)
                 this._undoStack.push(batchAction)
             }
         } catch (e) {
