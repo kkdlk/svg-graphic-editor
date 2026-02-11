@@ -39,11 +39,6 @@ const svgEditor = new SVGEditor(containerID.value, svgContentProvider.value.conf
 const editorStatus = ref(false)
 // 初始化
 const initEvent = () => {
-    const expands = import.meta.glob("../../expand/**/*.svg", { eager: true, query: "?raw" })
-    for (const expandsKey in expands) {
-        const value = expands[expandsKey]
-        svgEditor.registerFillPattern(expandsKey.split("/").pop().replace(".svg", ""), value.default)
-    }
     // 选中
     svgEditor.on(EventConstant.SELECT_CHANGE, (selectList) => {
         // 选中的数据变化,样式属性修改

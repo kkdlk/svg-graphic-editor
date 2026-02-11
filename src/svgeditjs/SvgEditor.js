@@ -57,12 +57,11 @@ export default class SVGEditor {
     }
     /**
      * 注册填充
-     * @param {string} name - 填充名称
-     * @param {string} svgString - 填充 SVG 字符串
+     * @param {Object} patternObj - 注册填充
      * @returns {void|*}
      */
-    registerFillPattern(name, svgString) {
-        return this._svgCoreContext.registerFillPattern(name, svgString)
+    registerFillPattern(patternObj) {
+        return this._svgCoreContext.registerFillPattern(patternObj)
     }
     /**
      * 获取填充

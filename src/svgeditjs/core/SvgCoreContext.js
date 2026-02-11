@@ -7,6 +7,7 @@ import EventConstant from "../constant/EventConstant.js"
 import { SVG } from "@svgdotjs/svg.js"
 import SvgToDxfConverter from "../utils/SvgToDxfConverter.js"
 import HistoryManager from "./HistoryManager.js"
+import FILL_PATTERN_CONFIG_LIST from "../constant/FillPatternConfig.js"
 
 /**
  * @class SVGCoreContext
@@ -36,9 +37,11 @@ export default class SVGCoreContext {
         this._subscribeCurrentTool()
         // 10、重置默认值触发事件
         this._editorState.resetState(state)
-        this.createTemplateSvg()
+        // this.createTemplateSvg()
         // 11、构建历史记录管理器 (放在最后以捕获初始状态)
         this._historyManager = new HistoryManager(this)
+        // 12、注册填充
+        this.registerFillPatterns()
     }
 
     /**
@@ -65,6 +68,15 @@ export default class SVGCoreContext {
             .fill("transparent")
             .stroke("#999999")
         this._elementManager.registerElement(path1)
+    }
+
+    /**
+     * 注册填充
+     */
+    registerFillPatterns() {
+        FILL_PATTERN_CONFIG_LIST.forEach((pattern) => {
+            this.registerFillPattern(pattern)
+        })
     }
 
     /**
@@ -97,12 +109,11 @@ export default class SVGCoreContext {
     }
     /**
      * 注册填充
-     * @param {string} name - 填充名称
-     * @param {string} svgString - 填充 SVG 字符串
+     * @param {Object} patternObj - 注册填充
      * @returns {void|*}
      */
-    registerFillPattern(name, svgString) {
-        return this._canvasManager.registerFillPattern(name, svgString)
+    registerFillPattern(patternObj) {
+        return this._canvasManager.registerFillPattern(patternObj)
     }
     /**
      * 获取填充
@@ -201,6 +212,7 @@ export default class SVGCoreContext {
     exportDxfString() {
         return SvgToDxfConverter.convert(this._svgCanvas)
     }
+
     get editorState() {
         return this._editorState
     }
@@ -240,6 +252,7 @@ export default class SVGCoreContext {
     get historyManager() {
         return this._historyManager
     }
+
     destroy() {
         // 关闭平移缩放
         this.setPanZoomStatus(false)

@@ -66,7 +66,6 @@ export default class HistoryManager {
             // 记录新增历史
             const data = this._snapshotMap.get(elementId)
             if (data) {
-                debugger
                 this._undoStack.push({
                     type: "add",
                     data: data
@@ -286,7 +285,6 @@ export default class HistoryManager {
                 // 2. 推入 Redo 栈
                 this._redoStack.push(batchAction)
             } else if (batchAction.type === "add") {
-                debugger
                 // 撤销新增 -> 删除元素
                 const { id } = batchAction.data
                 // 此时元素应该在画布上

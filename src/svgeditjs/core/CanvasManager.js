@@ -196,25 +196,25 @@ export default class CanvasManager {
 
     /**
      * 注册填充
-     * @param {string} name - 填充名称
-     * @param {string} svgString - 填充 SVG 字符串
+     * @param {{id: string, label: string, value: string}} patternObj - 注册填充
      */
-    registerFillPattern(name, svgString) {
-        const defs = this._svgCanvas.defs()
-        this._elementManager.registerElement(defs)
+    registerFillPattern(patternObj) {
+        // 宽高
         const width = 64
         const height = 64
+        // defs
+        const defs = this._svgCanvas.defs()
+        this._elementManager.registerElement(defs)
+        // 注册pattern
         const pattern = defs
             .pattern(width, height, (svgEl) => {
-                svgEl.svg(svgString).viewbox(0, 0, width, height).size("100%", "100%").move(0, 0)
+                svgEl.svg(patternObj.value).viewbox(0, 0, width, height).size("100%", "100%").move(0, 0)
             })
-            .attr({
-                patternUnits: "userSpaceOnUse"
-            })
+            .attr({ patternUnits: "userSpaceOnUse" })
         // 添加到容器内
-        const eleId = this._elementManager.registerElement(pattern)
+        const eleId = this._elementManager.registerElement(pattern, { id: patternObj.id })
         // 注册到ID和内容的映射
-        this._fillPatternMap.set(eleId, { id: eleId, label: name, value: `url(#${eleId})`, pattern: pattern })
+        this._fillPatternMap.set(eleId, { id: eleId, label: patternObj.label, value: `url(#${eleId})`, pattern: pattern })
         return eleId
     }
     /**
