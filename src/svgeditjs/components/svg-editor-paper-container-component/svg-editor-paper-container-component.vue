@@ -5,8 +5,7 @@
             <div class="svg-editor-svg-container" :id="containerID"></div>
         </div>
         <div class="svg-editor-right-container" v-if="!props.readonly">
-            <svg-style-editor-component v-if="editorStatus" :svgEditor="svgEditor"
-                :selectIdList="svgContentProvider.selectElementIds" />
+            <svg-style-editor-component v-if="editorStatus" :svgEditor="svgEditor" :selectIdList="svgContentProvider.selectElementIds" />
         </div>
     </div>
 </template>
@@ -119,8 +118,8 @@ defineExpose({
         height: 100%;
 
         .svg-editor-svg-container {
-            flex: 1;
-            height: 0;
+            width: 100%;
+            height: 100%;
             box-sizing: border-box;
             overflow: hidden;
         }

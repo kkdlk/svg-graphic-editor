@@ -141,18 +141,21 @@ export default class SVGCoreContext {
             this._closeDisibleToolEvent()
             // 根据工具类型进行初始化
             switch (toolType) {
-                case "moveZoom":
+                case "moveZoom": {
                     // 启用平移缩放工具
                     this.setPanZoomStatus(true)
                     break
-                case "select":
+                }
+                case "select": {
                     // 启用选择工具
                     this._selectionHandler.bindSelectEvent()
                     break
-                case "fullPage":
+                }
+                case "fullPage": {
                     const container = document.getElementById(this._containerId)
                     this._canvasManager._updateCanvasSizeAndGrid(container)
                     break
+                }
                 case "rect":
                 case "circle":
                 case "ellipse":
@@ -160,10 +163,11 @@ export default class SVGCoreContext {
                 case "polygon":
                 case "polyline":
                 case "bezier":
-                case "text":
+                case "text": {
                     // 启用绘图工具
                     this._drawingManager.setActiveTool(toolType)
                     break
+                }
             }
             // 触发工具变化事件
             this._eventBus.emit(EventConstant.TOOL_CHANGE, toolType)

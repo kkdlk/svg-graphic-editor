@@ -17,8 +17,7 @@
                 <el-input-number v-model="rotate" :min="-180" :max="180" :precision="0" style="width: 100%" />
             </el-form-item>
             <el-form-item label="透明度">
-                <el-input-number v-model="opacity" :precision="1" :min="0.1" :max="1.0" :step="0.1"
-                    style="width: 100%" />
+                <el-input-number v-model="opacity" :precision="1" :min="0.1" :max="1.0" :step="0.1" style="width: 100%" />
             </el-form-item>
             <template v-if="['rect', 'circle', 'ellipse', 'polygon'].includes(selectElement?.type) || isPathClosed">
                 <el-form-item label="填充颜色" label-position="left">
@@ -53,20 +52,25 @@
                 </el-form-item>
                 <el-form-item label="字体" label-position="left">
                     <el-select v-model="fontFamily" placeholder="请选择字体">
-                        <el-option v-for="item in fontFamilyList" :key="item.id" :label="item.label"
-                            :value="item.value" />
+                        <el-option v-for="item in fontFamilyList" :key="item.id" :label="item.label" :value="item.value" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="字体大小" label-position="left">
                     <el-input-number v-model="fontSize" :min="0" :precision="0" style="width: 100%" />
                 </el-form-item>
                 <el-form-item label="字体颜色" label-position="left">
-                    <el-color-picker show-alpha :model-value="stroke" size="large" @change="
-                        (val) => {
-                            stroke = val
-                            fill = val
-                        }
-                    " @clear="() => (stroke = '#000000')" />
+                    <el-color-picker
+                        show-alpha
+                        :model-value="stroke"
+                        size="large"
+                        @change="
+                            (val) => {
+                                stroke = val
+                                fill = val
+                            }
+                        "
+                        @clear="() => (stroke = '#000000')"
+                    />
                 </el-form-item>
                 <el-form-item label="字体粗细" label-position="left">
                     <el-select v-model="fontWeight" placeholder="请选择字体粗细">
@@ -116,16 +120,16 @@ const getCurrentElementId = () => props.selectIdList[0] || null
 // 辅助函数：更新元素数据
 const updateElementData = (path, value) => {
     const elementId = getCurrentElementId()
-    if (!elementId || !props.svgEditor?.svgCoreContext?.elementManager) return
-
-    let updateData = {}
+    if (!elementId || !props.svgEditor?.svgCoreContext?.elementManager) {
+        return
+    }
+    const updateData = {}
     if (path.includes(".")) {
         const [parent, child] = path.split(".")
         updateData[parent] = { [child]: value }
     } else {
         updateData.style = { [path]: value }
     }
-
     props.svgEditor.svgCoreContext.elementManager.updateElementData(elementId, updateData)
 }
 
@@ -165,16 +169,19 @@ const isPathClosed = computed(() => {
 const fill = computed({
     get: () => {
         const fillValue = selectElement.value?.style?.fill
-        if (!fillValue) return null
+        if (!fillValue) {
+            return null
+        }
         return fillValue.startsWith("url") ? null : fillValue
     },
     set: (val) => updateElementData("fill", val)
 })
-
 const fillTexture = computed({
     get: () => {
         const fillValue = selectElement.value?.style?.fill
-        if (!fillValue) return ""
+        if (!fillValue) {
+            return ""
+        }
         return fillValue.startsWith("url") ? fillValue : ""
     },
     set: (val) => updateElementData("fill", val)
@@ -206,8 +213,9 @@ const fontFamilyList = ref([
 
 // 监听元素数据变化的事件处理函数
 const handleElementDataChange = () => {
-    if (!props.svgEditor?.svgCoreContext?.elementManager || props.selectIdList.length !== 1) return
-
+    if (!props.svgEditor?.svgCoreContext?.elementManager || props.selectIdList.length !== 1) {
+        return
+    }
     const elementData = props.svgEditor.svgCoreContext.elementManager.getElementData(props.selectIdList[0])
     if (elementData) {
         selectElement.value = { ...elementData }

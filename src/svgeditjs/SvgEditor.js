@@ -7,10 +7,10 @@ export default class SVGEditor {
     constructor(containerId, state = {}) {
         this._svgCoreContext = null
         this._containerId = containerId
-        this._state = state
+        this._initState = state
     }
     init() {
-        this._svgCoreContext = new SVGCoreContext(this._containerId, this._state)
+        this._svgCoreContext = new SVGCoreContext(this._containerId, this._initState)
         return this
     }
     /**

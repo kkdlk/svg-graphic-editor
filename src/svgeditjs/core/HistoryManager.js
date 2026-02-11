@@ -42,19 +42,25 @@ export default class HistoryManager {
     _bindEvents() {
         // 位置和形状更新 (批量)
         this._eventBus.on(EventConstant.ELEMENT_FORMAT_DATA, (elementIds) => {
-            if (this._isUndoRedo) return
+            if (this._isUndoRedo) {
+                return
+            }
             const ids = Array.isArray(elementIds) ? elementIds : [elementIds]
             this._handleBatchUpdate(ids)
         })
         // 样式更新 (单个或数组)
         this._eventBus.on(EventConstant.ELEMENT_UPDATE_DATA, (elementIds) => {
-            if (this._isUndoRedo) return
+            if (this._isUndoRedo) {
+                return
+            }
             const ids = Array.isArray(elementIds) ? elementIds : [elementIds]
             this._handleBatchUpdate(ids)
         })
         // 新增
         this._eventBus.on(EventConstant.ELEMENT_REGISTER, (elementId) => {
-            if (this._isUndoRedo) return
+            if (this._isUndoRedo) {
+                return
+            }
             // 新增元素时，需要立即记录初始快照
             this._updateSnapshot(elementId)
             // 记录新增历史
@@ -76,7 +82,9 @@ export default class HistoryManager {
 
         // 删除
         this._eventBus.on(EventConstant.ELEMENT_REMOVE, (elementId) => {
-            if (this._isUndoRedo) return
+            if (this._isUndoRedo) {
+                return
+            }
             // 获取删除前的快照
             const data = this._snapshotMap.get(elementId)
             if (data) {
@@ -163,7 +171,9 @@ export default class HistoryManager {
      */
     _getSnapshot(id) {
         const elementData = this._elementManager.getElementData(id)
-        if (!elementData) return null
+        if (!elementData) {
+            return null
+        }
         // 深拷贝，防止引用被修改
         const element = elementData.element.clone(true)
         element.off()
@@ -190,13 +200,18 @@ export default class HistoryManager {
      * 记录批量历史
      */
     _recordBatchHistory() {
-        if (this._pendingElementIds.size === 0) return
+        if (this._pendingElementIds.size === 0) {
+            return
+        }
 
         const changes = []
 
         for (const id of this._pendingElementIds) {
             const currentData = this._getSnapshot(id)
-            if (!currentData) continue // 元素可能已被删除
+            if (!currentData) {
+                // 元素可能已被删除
+                continue
+            }
 
             const prevData = this._snapshotMap.get(id)
 
@@ -225,7 +240,9 @@ export default class HistoryManager {
 
         this._pendingElementIds.clear()
 
-        if (changes.length === 0) return
+        if (changes.length === 0) {
+            return
+        }
 
         // 推入撤销栈
         this._undoStack.push({
@@ -249,7 +266,9 @@ export default class HistoryManager {
      * 撤销
      */
     undo() {
-        if (this._undoStack.length === 0) return
+        if (this._undoStack.length === 0) {
+            return
+        }
         this._isUndoRedo = true
 
         const batchAction = this._undoStack.pop()
@@ -296,7 +315,9 @@ export default class HistoryManager {
      * 重做
      */
     redo() {
-        if (this._redoStack.length === 0) return
+        if (this._redoStack.length === 0) {
+            return
+        }
         this._isUndoRedo = true
 
         const batchAction = this._redoStack.pop()
