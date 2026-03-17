@@ -15,6 +15,7 @@ import { inject, nextTick, onMounted, onUnmounted, ref, watch } from "vue"
 import SVGEditor from "../../../svgeditjs/SvgEditor.js"
 import EventConstant from "@/svgeditjs/constant/EventConstant.js"
 import SvgStyleEditorComponent from "../svg-style-editor-component/svg-style-editor-component.vue"
+import * as FileBlobUtil from "../../utils/FileBlobUtil.js"
 
 const props = defineProps({
     pageId: {
@@ -64,10 +65,28 @@ watch(
     (value) => {
         if (value && svgEditor) {
             svgEditor.setTool(value)
-            if (value === "fullPage") {
+            if (["fullPage", "exportSvg", "exportDxf"].includes(value)) {
                 setTimeout(() => {
                     svgContentProvider.value.currentSvgTool = "moveZoom"
                 }, 500)
+            }
+            if (value === "exportSvg") {
+                // 导出svg
+                const svgString = svgEditor.exportSvgString()
+                // 下载svg文件
+                const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" })
+                const url = FileBlobUtil.fileToBlobUrl(blob)
+                FileBlobUtil.downloadFile(url, `${+new Date()}-svg导出.svg`)
+                FileBlobUtil.revokeBlobUrl(url)
+            }
+            if (value === "exportDxf") {
+                // 导出dxf
+                const dxfString = svgEditor.exportDxfString()
+                // 下载svg文件
+                const blob = new Blob([dxfString], { type: "application/dxf;charset=utf-8" })
+                const url = FileBlobUtil.fileToBlobUrl(blob)
+                FileBlobUtil.downloadFile(url, `${+new Date()}-dxf导出.dxf`)
+                FileBlobUtil.revokeBlobUrl(url)
             }
         }
     }

@@ -200,8 +200,8 @@ export default class CanvasManager {
      */
     registerFillPattern(patternObj) {
         // 宽高
-        const width = 64
-        const height = 64
+        const width = 8
+        const height = 8
         // defs
         const defs = this._svgCanvas.defs()
         this._elementManager.registerElement(defs)

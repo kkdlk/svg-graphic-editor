@@ -26,9 +26,9 @@ importers:
       '@svgdotjs/svg.select.js':
         specifier: ^4.0.3
         version: 4.0.3(@svgdotjs/svg.js@3.2.5)
-      dxf-writer:
-        specifier: ^1.18.4
-        version: 1.18.4
+      '@tarikjabiri/dxf':
+        specifier: ^3.0.0-alpha.13
+        version: 3.0.0-alpha.13
       element-plus:
         specifier: ^2.13.1
         version: 2.13.1(vue@3.5.26(typescript@5.9.3))
@@ -692,6 +692,10 @@ packages:
   '@sxzz/popperjs-es@2.11.7':
     resolution: {integrity: sha512-Ccy0NlLkzr0Ex2FKvh2X+OyERHXJ88XJ1MXtsI9y9fGexlaXaVTPzBCRBwIxFkORuOb+uBqeu+RqnpgYTEZRUQ==}
 
+  '@tarikjabiri/dxf@3.0.0-alpha.13':
+    resolution: {integrity: sha512-7NDioS2JPm7Y9/9wQaSzk3qdEcES+d+uP682waJtwqzXrL5a3PylYMOX6Rbs85YzU7RelnrqaUs7bWIoSsM+Gg==}
+    engines: {node: '>=16', pnpm: '>=8'}
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -956,9 +960,6 @@ packages:
     resolution: {integrity: sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg==}
     engines: {node: '>=0.10'}
     hasBin: true
-
-  dxf-writer@1.18.4:
-    resolution: {integrity: sha512-JdLOyP+1UyeB30yPowJLJKK0bPROq/dX+QTWcLSplQoepcyo/YMlU0Z27T7mIPxgwiPb+CQWwUIlbcRRfns+ng==}
 
   electron-to-chromium@1.5.267:
     resolution: {integrity: sha512-0Drusm6MVRXSOJpGbaSVgcQsuB4hEkMpHXaVstcPmhu5LIedxs1xNK/nIxmQIU/RPC0+1/o0AVZfBTkTNJOdUw==}
@@ -2224,6 +2225,8 @@ snapshots:
 
   '@sxzz/popperjs-es@2.11.7': {}
 
+  '@tarikjabiri/dxf@3.0.0-alpha.13': {}
+
   '@types/estree@1.0.8': {}
 
   '@types/json-schema@7.0.15': {}
@@ -2548,8 +2551,6 @@ snapshots:
 
   detect-libc@1.0.3:
     optional: true
-
-  dxf-writer@1.18.4: {}
 
   electron-to-chromium@1.5.267: {}
 

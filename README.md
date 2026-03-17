@@ -10,11 +10,19 @@
 - **构建工具**: Vite
 - **UI组件库**: Element Plus
 - **样式**: SCSS
-- **核心功能**: 自定义 SVG 编辑引擎
+- **核心功能**: 自定义 SVG 编辑引擎， 导出dxf文件
 
 ## 功能截图
 
+### 基础功能
 ![功能截图](./docs/svg编辑预览.png)
+
+### SVG填充
+![SVG填充](./docs/svg编辑器填充.png)
+
+### SVG导出
+![SVG导出](./docs/svg编辑器导出dxf.png)
+
 
 
 
