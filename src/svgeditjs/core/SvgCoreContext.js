@@ -206,7 +206,9 @@ export default class SVGCoreContext {
     }
     // 导出 SVG 字符串
     exportSvgString() {
-        return this._svgCanvas.svg()
+        const cloneSvg = this._svgCanvas.clone(true, false)
+        cloneSvg.viewbox(0, 0, cloneSvg.width(), cloneSvg.height())
+        return cloneSvg.svg()
     }
     // 导出 DXF 字符串
     exportDxfString() {

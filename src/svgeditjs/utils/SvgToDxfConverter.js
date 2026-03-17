@@ -18,6 +18,8 @@ import FillPattern from "../constant/FillPatternConfig.js"
 
 /**
  * 使用 @tarikjabiri/dxf 实现的 SVG 转 DXF 工具
+ * @author kkdlk
+ * @date 2026-03-17
  */
 export default class SvgToDxfConverter {
     /**
