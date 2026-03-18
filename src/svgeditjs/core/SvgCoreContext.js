@@ -191,16 +191,15 @@ export default class SVGCoreContext {
      * @returns {void|*}
      */
     loadSvgString(svgString) {
-        const svgEl = SVG(svgString)
-        // 递归将数据添加到元素管理器
-        if (svgEl.type === "svg") {
-            svgEl.children().forEach((child) => {
-                this._elementManager.addElementsRecursively(child)
-                this._svgCanvas.add(child)
-            })
-        } else {
-            this._elementManager.addElementsRecursively(svgEl)
-            this._svgCanvas.add(svgEl)
+        const svgEl = SVG(svgString, true)
+        const svgKeys = Object.keys(svgEl.attr())
+        for (const svgKey of svgKeys) {
+            this._svgCanvas.attr(svgKey, svgEl.attr(svgKey))
+        }
+        if (svgEl.children) {
+            for (const child of svgEl.children()) {
+                this._elementManager.addElementsRecursively(this._svgCanvas, child)
+            }
         }
         return svgEl
     }

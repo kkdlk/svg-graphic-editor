@@ -248,18 +248,26 @@ export default class SVGElementManager {
     }
     /**
      * 递归添加元素
+     * @param {Object} svgCanvas - 新的
      * @param {Object} svgElement - SVG元素
      * @private
      */
-    addElementsRecursively(svgElement) {
-        if (!svgElement || !svgElement.node) return
-        // 递归处理子元素
-        svgElement.children().forEach((child) => {
-            this.addElementsRecursively(child)
-        })
-        if (svgElement.type !== "svg") {
-            // 添加当前元素
-            this.registerElement(svgElement)
+    addElementsRecursively(svgCanvas, svgElement) {
+        if (!svgElement || !svgElement.node) {
+            return
+        }
+        // 1. 注册当前元素
+        this.registerElement(svgElement)
+        // 2. 将元素添加到画布（如果是根元素）或父元素
+        if (!svgElement.parent() || svgElement.parent().type === "svg") {
+            // 如果元素没有父元素，或父元素是svg根，则添加到画布
+            svgCanvas.add(svgElement)
+        }
+        // 3. 递归处理子元素
+        if (svgElement.children && !["defs"].includes(svgElement.type)) {
+            for (const child of svgElement.children()) {
+                this.addElementsRecursively(svgCanvas, child)
+            }
         }
     }
 
